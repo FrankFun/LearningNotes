@@ -1,7 +1,7 @@
 ## **Bitmap**的分析与使用
  - Bitmap的创建
     - 创建Bitmap的时候，Java不提供`new Bitmap()`的形式去创建，而是通过`BitmapFactory`中的静态方法去创建,如:`BitmapFactory.decodeStream(is);//通过InputStream去解析生成Bitmap`(这里就不贴`BitmapFactory`中创建`Bitmap`的方法了，大家可以自己去看它的源码)，我们跟进`BitmapFactory`中创建`Bitmap`的源码，最终都可以追溯到这几个native函数
-    ```
+    ```java
         private static native Bitmap nativeDecodeStream(InputStream is, byte[] storage,
                     Rect padding, Options opts);
         private static native Bitmap nativeDecodeFileDescriptor(FileDescriptor fd,
@@ -22,7 +22,7 @@
             number of pixels. Any value <= 1 is treated the same as 1.
             
              很简洁明了啊！也就是说，只要按计算方法设置了这个参数，就可以完成我们Bitmap的Size调整了。那么，应该怎么调整姿势才比较舒服呢？下面先介绍其中一种通过``InputStream``的方式去创建``Bitmap``的方法，上一段从Gallery中获取照片并且将图片Size调整到合适手机尺寸的代码：
-        ```
+        ```java
             static final int PICK_PICS = 9;
             
             public void startGallery(){
@@ -126,7 +126,7 @@
               根据官方文档[在Android 3.0 引进了BitmapFactory.Options.inBitmap](https://developer.android.com/reference/android/graphics/BitmapFactory.Options.html#inBitmap)，如果这个值被设置了，decode方法会在加载内容的时候去重用已经存在的bitmap. 这意味着bitmap的内存是被重新利用的，这样可以提升性能, 并且减少了内存的分配与回收。然而，使用inBitmap有一些限制。特别是在Android 4.4 之前，只支持同等大小的位图。
             我们看来看看这个参数最基本的运用方法。
             
-            ```
+            ```java
             new BitmapFactory.Options options = new BitmapFactory.Options();
             //inBitmap只有当inMutable为true的时候是可用的。
             options.inMutable = true;
@@ -136,7 +136,7 @@
             
               这样，当你在下一次decodeBitmap的时候，将设置了`options.inMutable=true`以及`options.inBitmap`的`Options`传入，Android就会复用你的Bitmap了，具体实例：
             
-            ```
+            ```java
             @Override
             protected void onCreate(@Nullable Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
@@ -190,7 +190,7 @@
         一定要记得及时回收Bitmap，否则如上分析，你的native以及dalvik的内存都会被一直占用着，最终导致OOM
         
         
-        ```
+        ```java
         // 先判断是否已经回收
         if(bitmap != null && !bitmap.isRecycled()){
             // 回收并且置为null
